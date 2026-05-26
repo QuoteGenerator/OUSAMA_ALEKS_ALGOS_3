@@ -1,0 +1,6 @@
+# depslib dependency file v1.0
+1779819460 source:c:\ousama\studium\sem 2\c++ projects\ousama_aleks_algos_3\ousama_aleks_algos_3\main.cpp
+	<iostream>
+	<fstream>
+	<vector>
+
