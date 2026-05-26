@@ -2,6 +2,7 @@
 #include <fstream>
 #include <vector>
 #include <unordered_map>
+#include <string>
 
 struct Item
 {
@@ -26,7 +27,7 @@ struct Station
 };
 
 void printPath(std::string start, std::string target);
-void find_path_with_dijkstra(const std::string& start);
+bool find_simple_path(std::string current, std::string target);
 
 
 
@@ -176,76 +177,47 @@ int main(int argc, char* argv[])
     std::cout << "Start: " << start << "; Destination --> " << destination << std::endl;
     std::cout << std::endl;
     std::cout << std::endl;
-    find_path_with_dijkstra(start);
+
+    find_simple_path(start, destination);
+
     printPath(start, destination);
 
 
     return 0;
 }
 
-std::unordered_map<std::string, int> dist;
 std::unordered_map<std::string, std::string> parent;
-std::unordered_map<std::string, std::string> lineUsed;
 std::unordered_map<std::string, bool> visited;
 
-void find_path_with_dijkstra(const std::string& start){
-        std::vector<Item> q;
+bool find_simple_path(std::string current, std::string target){
 
-    // alles auf unendlich setzen
-    for (auto& s : graph)
+    visited[current] = true;
+
+    if (current == target)
+        return true;
+
+    for (auto &station : graph)
     {
-        dist[s.name] = 1000000000;
-    }
-
-    dist[start] = 0;
-    q.push_back({start, 0});
-
-    while (!q.empty())
-    {
-        // kürzeste Wege
-        int best = 0;
-
-        for (int i = 1; i < q.size(); i++)
+        if (station.name == current)
         {
-            if (q[i].cost < q[best].cost)
-                best = i;
-        }
-
-        Item current = q[best];
-        q.erase(q.begin() + best);
-
-        std::string u = current.station;
-
-        if (visited[u])
-            continue;
-
-        visited[u] = true;
-
-        // Nachbarn checken
-        for (auto& s : graph)
-        {
-            if (s.name == u)
+            for (auto &e : station.neighbors)
             {
-                for (auto& e : s.neighbors)
+                if (!visited[e.to])
                 {
-                    int newCost = dist[u] + e.weight;
+                    parent[e.to] = current;
 
-                    if (newCost < dist[e.to])
-                    {
-                        dist[e.to] = newCost;
-                        parent[e.to] = u;
-                        lineUsed[e.to] = e.line;
-
-                        q.push_back({e.to, newCost});
-                    }
+                    if (find_simple_path(e.to, target))
+                        return true;
                 }
             }
         }
     }
+    return false;
 }
 
 void printPath(std::string start, std::string target)
 {
+
     std::vector<std::string> path;
 
     std::string current = target;
@@ -255,21 +227,15 @@ void printPath(std::string start, std::string target)
         path.push_back(current);
         current = parent[current];
     }
-
     path.push_back(start);
 
     for (int i = path.size() - 1; i >= 0; i--)
     {
         std::cout << path[i];
 
-        if (i != 0){
-            std::string from = path[i];
-            std::string to = path[i - 1];
-            std::cout << " (" << lineUsed[to] << ")";
-            std::cout << " -> ";
-        }
+        if (i != 0)
+            std::cout << " ---> ";
     }
 
     std::cout << std::endl;
-    std::cout << "Kosten: " << dist[target] << std::endl;
 }
