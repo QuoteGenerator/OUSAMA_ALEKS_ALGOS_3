@@ -1,6 +1,13 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <unordered_map>
+
+struct Item
+{
+    std::string station;
+    int cost;
+};
 
 // Edge between stations
 struct Edge
@@ -17,6 +24,10 @@ struct Station
     std::string name;
     std::vector<Edge> neighbors;
 };
+
+void printPath(std::string start, std::string target);
+void find_path_with_dijkstra(const std::string& start);
+
 
 
 // Graph (list of stations)
@@ -48,6 +59,7 @@ void addEdge(std::string from, std::string to, int weight, std::string line)
     {
         Station s;
         s.name = from;
+
 
         graph.push_back(s);
         index = graph.size() - 1;
@@ -132,12 +144,16 @@ void readFromFile(const char* filename)
 }
 
 
-int main()
+int main(int argc, char* argv[])
 {
-    readFromFile("wien.txt");
+    std::string filename = argv[1];
+    std::string start = argv[2];
+    std::string destination = argv[3];
+
+    readFromFile(filename.c_str());
 
     // Ausgabe testen
-    for(size_t i = 0; i < graph.size(); i++)
+    /*for(size_t i = 0; i < graph.size(); i++)
     {
         std::cout << graph[i].name << std::endl;
 
@@ -153,7 +169,107 @@ int main()
         }
 
         std::cout << std::endl;
-    }
+    }*/
+
+
+    std::cout << std::endl;
+    std::cout << "Start: " << start << "; Destination --> " << destination << std::endl;
+    std::cout << std::endl;
+    std::cout << std::endl;
+    find_path_with_dijkstra(start);
+    printPath(start, destination);
+
 
     return 0;
+}
+
+std::unordered_map<std::string, int> dist;
+std::unordered_map<std::string, std::string> parent;
+std::unordered_map<std::string, std::string> lineUsed;
+std::unordered_map<std::string, bool> visited;
+
+void find_path_with_dijkstra(const std::string& start){
+        std::vector<Item> q;
+
+    // alles auf unendlich setzen
+    for (auto& s : graph)
+    {
+        dist[s.name] = 1000000000;
+    }
+
+    dist[start] = 0;
+    q.push_back({start, 0});
+
+    while (!q.empty())
+    {
+        // kürzeste Wege
+        int best = 0;
+
+        for (int i = 1; i < q.size(); i++)
+        {
+            if (q[i].cost < q[best].cost)
+                best = i;
+        }
+
+        Item current = q[best];
+        q.erase(q.begin() + best);
+
+        std::string u = current.station;
+
+        if (visited[u])
+            continue;
+
+        visited[u] = true;
+
+        // Nachbarn checken
+        for (auto& s : graph)
+        {
+            if (s.name == u)
+            {
+                for (auto& e : s.neighbors)
+                {
+                    int newCost = dist[u] + e.weight;
+
+                    if (newCost < dist[e.to])
+                    {
+                        dist[e.to] = newCost;
+                        parent[e.to] = u;
+                        lineUsed[e.to] = e.line;
+
+                        q.push_back({e.to, newCost});
+                    }
+                }
+            }
+        }
+    }
+}
+
+void printPath(std::string start, std::string target)
+{
+    std::vector<std::string> path;
+
+    std::string current = target;
+
+    while (current != start)
+    {
+        path.push_back(current);
+        current = parent[current];
+    }
+
+    path.push_back(start);
+
+    for (int i = path.size() - 1; i >= 0; i--)
+    {
+        std::cout << path[i];
+
+        if (i != 0){
+            std::string from = path[i];
+            std::string to = path[i - 1];
+            std::cout << " (" << lineUsed[to] << ")";
+            std::cout << " -> ";
+        }
+    }
+
+    std::cout << std::endl;
+    std::cout << "Kosten: " << dist[target] << std::endl;
 }
