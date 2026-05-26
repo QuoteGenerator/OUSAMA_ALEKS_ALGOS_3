@@ -4,12 +4,6 @@
 #include <unordered_map>
 #include <string>
 
-struct Item
-{
-    std::string station;
-    int cost;
-};
-
 // Edge between stations
 struct Edge
 {
@@ -28,8 +22,6 @@ struct Station
 
 void printPath(std::string start, std::string target);
 bool find_simple_path(std::string current, std::string target);
-
-
 
 // Graph (list of stations)
 std::vector<Station> graph;
@@ -215,8 +207,7 @@ bool find_simple_path(std::string current, std::string target){
     return false;
 }
 
-void printPath(std::string start, std::string target)
-{
+void printPath(std::string start, std::string target) {
 
     std::vector<std::string> path;
 
@@ -233,8 +224,9 @@ void printPath(std::string start, std::string target)
     {
         std::cout << path[i];
 
-        if (i != 0)
+        if (i != 0) {
             std::cout << " ---> ";
+        }
     }
 
     std::cout << std::endl;
